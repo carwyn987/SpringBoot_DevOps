@@ -15,6 +15,7 @@ dnf -y install maven \
                man \
                vim \
                wget \
+               tree \
                net-tools \
                && dnf clean all
 

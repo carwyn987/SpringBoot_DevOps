@@ -1,11 +1,16 @@
 FROM rockylinux:9
 
-# java setup
+# environment setup
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# package setup with heredoc for min(layers)
 RUN bash <<EOF
 
 dnf -y module enable java:23
 dnf -y groupinstall "Development Tools"
 dnf -y install maven \
+               java-21-openjdk-devel \
                sudo \
                man \
                vim \

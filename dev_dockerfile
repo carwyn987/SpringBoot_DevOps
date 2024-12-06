@@ -35,5 +35,8 @@ RUN groupadd -g $USER_GID myusergroup && \
 USER myuser
 WORKDIR /home/myuser/app
 
+# Expose webserver
+EXPOSE 8080
+
 ENTRYPOINT ["/bin/bash"]
 

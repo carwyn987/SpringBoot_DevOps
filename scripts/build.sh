@@ -1,1 +1,1 @@
-docker build -f "Dockerfile" -t "my_springapp" .
+docker build -f "dev_dockerfile" -t "my_springapp" .

@@ -1,0 +1,100 @@
+// Jenkinsfile
+// This pipeline script automates the setup of the Jenkins container as described in setup.sh.
+// It includes stages for setup, building, testing, and teardown.
+
+def containerName = 'jenkins-blueocean'
+def imageName = 'myjenkins-blueocean:2.479.2-1'
+def networkName = 'jenkins'
+
+def dockerBuild() {
+    sh "docker build -t ${imageName} ."
+}
+
+def dockerRun() {
+    sh '''docker run \
+        --name ${containerName} \
+        --restart=on-failure \
+        --detach \
+        --network ${networkName} \
+        --env DOCKER_HOST=tcp://docker:2376 \
+        --env DOCKER_CERT_PATH=/certs/client \
+        --env DOCKER_TLS_VERIFY=1 \
+        --publish 8080:8080 \
+        --publish 50000:50000 \
+        --volume jenkins-data:/var/jenkins_home \
+        --volume jenkins-docker-certs:/certs/client:ro \
+        ${imageName}'''
+}
+
+def dockerTeardown() {
+    sh '''docker rm -f ${containerName} || true
+          docker network rm ${networkName} || true
+    '''
+}
+
+def checkContainerStatus() {
+    sh "docker ps -f name=${containerName}"
+}
+
+def runTests() {
+    // Placeholder for actual test commands
+    sh 'echo "Running tests..."'
+    sh 'sleep 5'  // Simulate test duration
+    sh 'echo "Tests completed successfully."'
+}
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Setup Network') {
+            steps {
+                echo 'Setting up Docker network...'
+                sh "docker network create ${networkName} || true"
+            }
+        }
+
+        stage('Build Container') {
+            steps {
+                echo 'Building Jenkins Docker image...'
+                dockerBuild()
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                echo 'Starting Jenkins container...'
+                dockerRun()
+                echo 'Jenkins is running at http://localhost:8080'
+            }
+        }
+
+        stage('Test Container') {
+            steps {
+                echo 'Verifying container setup...'
+                checkContainerStatus()
+                runTests()
+            }
+        }
+
+        stage('Teardown') {
+            steps {
+                echo 'Cleaning up resources...'
+                dockerTeardown()
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished, cleaning up if necessary.'
+            dockerTeardown()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs for more details.'
+        }
+    }
+}

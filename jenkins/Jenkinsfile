@@ -11,7 +11,7 @@ def dockerBuild() {
 }
 
 def dockerRun() {
-    sh '''docker run \
+    sh """docker run \
         --name ${containerName} \
         --restart=on-failure \
         --detach \
@@ -23,13 +23,13 @@ def dockerRun() {
         --publish 50000:50000 \
         --volume jenkins-data:/var/jenkins_home \
         --volume jenkins-docker-certs:/certs/client:ro \
-        ${imageName}'''
+        ${imageName}"""
 }
 
 def dockerTeardown() {
-    sh '''docker rm -f ${containerName} || true
+    sh """docker rm -f ${containerName} || true
           docker network rm ${networkName} || true
-    '''
+    """
 }
 
 def checkContainerStatus() {
